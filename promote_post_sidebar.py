@@ -10,10 +10,12 @@ def promote_post_sidebar():
     # Streamlit app layout
         st.title("Promote post")
         with st.sidebar:
-            st.session_state["K_TOP"]= st.radio(
-                "K top:",
-                ("3","5","10","15"), index=2,horizontal=True
-            )
+#            st.session_state["K_TOP"]= st.radio(
+#                "K top:",
+#                ("3","5","10","15"), index=2,horizontal=True
+#            )
+            st.session_state["NUMBER_OF_SUGGESTIONS"] = st.slider('Number of suggestions', 1, 20, 7, step=1)
+            st.session_state["TEMPERATURE"] = st.slider('Temperature - higher=more creative', 0.0, 1.0, 0.0, step=0.0001)
 
         # Optionally visualize graph data using third-party libraries
 

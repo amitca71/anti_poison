@@ -41,7 +41,7 @@ class ChainClass:
         print("api key" + self.api_key, "USER_OPENAI_API_KEY" in  st.session_state ,st.secrets[st.session_state["MODEL_API_KEY_TYPE"]])
         self.api_base=None if "GOOGLE" in st.session_state["MODEL_API_KEY_TYPE"] else st.secrets[st.session_state["MODEL_API_KEY_TYPE"].replace("KEY", "BASE")]
         self.model_name=st.session_state['GPT_MODEL_NAME']
-        self.temprature=0
+        self.temprature=st.session_state["TEMPERATURE"]
         if "gemini" in self.model_name:
             self.llm = ChatGoogleGenerativeAI(model=self.model_name, google_api_key=self.api_key,temperature=self.temprature, verbose=True,top_k=200)
         else:

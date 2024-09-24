@@ -4,7 +4,7 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.embeddings import BedrockEmbeddings
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from streamlit.logger import get_logger
-
+import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
 from langchain_community.chat_models import BedrockChat
@@ -88,9 +88,10 @@ def load_llm(llm_name: str, logger=logger, config={}):
 
 def configure_llm_only_chain(llm):
     # LLM only response
-    template = """
+    number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
+    template = f"""
     You are a bot designed to assist campaign with suggestions for post reactions to liberal tolerant people, writing against corruption, racism, pro democracy and against facism.
-    You sould provide 5 different option responses to respond in a way that it would encorage people to act or repost. 
+    You sould provide {number_of_responses} different option responses to respond in a way that it would encorage people to act or repost. 
     # you shouldnt respond anything except for the post
     # you shoul not give advise of what to do
     # you only focus on rellevant comments to the post provided
