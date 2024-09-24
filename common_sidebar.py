@@ -32,8 +32,6 @@ def common_sidebar():
             models_dct.keys(),
         )
         st.write("selected model:", model_name)
-        remaining_free_queries=st.session_state["FREE_QUESTIONS_REMAINING"] if "FREE_QUESTIONS_REMAINING" in st.session_state else st.secrets["FREE_QUESTIONS_PER_SESSION"]
-        st.write(f"remaining free quoata is: {remaining_free_queries} free questions")
         with st.expander(f"""Model Key- (needed after free quota is exahusted)"""):
             new_oak = st.text_input("Your API Key")
             # if "USER_OPENAI_API_KEY" not in st.session_state:
