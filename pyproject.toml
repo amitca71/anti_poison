@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "hebrew-model"
+version = "0.1.0"
+description = ""
+authors = ["amitca71 <amitca71@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.38.0"
+requests = "^2.32.3"
+python-dotenv = "^1.0.1"
+langchain-openai = "^0.1.23"
+langchain-community = "0.2.16"
+langchain-google-genai = "^1.0.8"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
