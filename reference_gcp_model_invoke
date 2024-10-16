@@ -1,0 +1,20 @@
+reference for invoking customized model on google:
+curl \
+-X POST \
+-H "Authorization: Bearer $(sudo ./google-cloud-sdk/bin/gcloud auth print-access-token)" \
+-H "Content-Type: application/json" \
+"https://us-central1-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/us-central1/endpoints/${ENDPOINT_ID}/chat/completions" \
+-d '{
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is the capital of France?",
+      "additional_info": "optional_value"
+    }
+  ],
+  "parameters": {
+    "max_output_tokens": 50,
+    "temperature": 0.5,
+    "top_p": 0.9
+  }
+}'
