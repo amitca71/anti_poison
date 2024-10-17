@@ -18,3 +18,46 @@ curl \
     "top_p": 0.9
   }
 }'
+
+
+
+
+number_of_responses=6
+system_instruction = f"""
+instructions
+"""
+
+user_input = """   input"""
+
+prompt = f"{system_instruction}\n### Human: {user_input}### Assistant: "
+
+
+# Structure your instances for a chat request
+instances = [
+    {
+        "messages": [
+            {"role": "user", "content": prompt},
+        ],
+        "parameters": {
+            "max_new_tokens": max_tokens,
+            "temperature": temperature,
+            "top_p": top_p,
+            "top_k": top_k,
+        },
+    },
+]
+
+# Make the prediction call to the chat model
+response = endpoint.predict(instances)
+
+# Print the full response for inspection
+print("Full Response:", response)
+
+# Adjust extraction based on the actual response structure
+if isinstance(response.predictions, list) and len(response.predictions) > 0:
+    chat_response = response.predictions[0]  # Directly use if it's a string
+    # Or adjust based on the structure you see in the printed response
+else:
+    chat_response = "No valid response received."
+
+print("Assistant's Response:", chat_response)
