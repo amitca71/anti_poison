@@ -6,7 +6,30 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from google.cloud import aiplatform
 import os
+from google.auth import default
+from google.auth.transport.requests import Request
 
+
+# Function to get the access token
+def get_access_token():
+        # Get the default credentials (this will use the GOOGLE_APPLICATION_CREDENTIALS env variable)
+        scopes = ['https://www.googleapis.com/auth/cloud-platform']
+        service_account_info = st.secrets["VERTEX_API_KEY"]
+        credentials_dict = json.loads(service_account_info)
+
+        # Set the environment variable for Google Cloud authentication
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/credentials.json"
+
+        # Write the credentials to a temporary file
+        with open(os.environ["GOOGLE_APPLICATION_CREDENTIALS"], "w") as f:
+            json.dump(credentials_dict, f)            
+        credentials, project = default(scopes=scopes)
+        # Refresh the credentials to obtain the access token
+        request = Request()
+
+        credentials.refresh(request)
+        access_token = credentials.token
+        return(access_token)
 def ChangeButtonColour(wgt_txt, wch_hex_colour = '12px'):
     htmlstr = """<script>var elements = window.parent.document.querySelectorAll('*'), i;
                 for (i = 0; i < elements.length; ++i) 
@@ -40,7 +63,7 @@ def AddSampleQuestions(sample_questions):
 class ChainClass:
     def __init__(self):
         self.api_key = st.session_state["USER_OPENAI_API_KEY"] if (("USER_OPENAI_API_KEY" in st.session_state) and (st.session_state["USER_OPENAI_API_KEY"])) else  st.secrets[st.session_state["MODEL_API_KEY_TYPE"]]
-        print("api key" + self.api_key, "USER_OPENAI_API_KEY" in  st.session_state ,st.secrets[st.session_state["MODEL_API_KEY_TYPE"]])
+#        print("api key" + self.api_key, "USER_OPENAI_API_KEY" in  st.session_state ,st.secrets[st.session_state["MODEL_API_KEY_TYPE"]])
         self.api_base=None if "GOOGLE" in st.session_state["MODEL_API_KEY_TYPE"] else st.secrets[st.session_state["MODEL_API_KEY_TYPE"].replace("KEY", "BASE")]
         self.model_name=st.session_state['GPT_MODEL_NAME']
         self.temprature=st.session_state["TEMPERATURE"]
@@ -50,7 +73,6 @@ class ChainClass:
             location=vertex_lst[1]
             endpoint_id=vertex_lst[2]
             service_account_info = st.secrets["VERTEX_API_KEY"]
-            print(service_account_info)
             credentials_dict = json.loads(service_account_info)
 
             # Set the environment variable for Google Cloud authentication

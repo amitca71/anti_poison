@@ -4,13 +4,13 @@ import streamlit as st
 from streamlit.logger import get_logger
 from langchain.callbacks.base import BaseCallbackHandler
 from dotenv import load_dotenv
-from common_functions import ChainClass
-
+from common_functions import ChainClass, get_access_token
+from google.auth.transport.requests import Request
 from chains import (
     configure_llm_only_chain,
     generate_ticket,
 )
-
+import requests
 load_dotenv(".env")
 from common_sidebar import common_sidebar
 common_sidebar()
@@ -82,24 +82,63 @@ def chat_input():
                     {"question": user_input, "chat_history": []}, callbacks=[stream_handler]
                 )["answer"]
             else:
+                vertex_lst=st.secrets["VERTEX_API_BASE"].split(",")
+                PROJECT_ID=vertex_lst[0]
+                LOCATION=vertex_lst[1]
+                ENDPOINT_ID=vertex_lst[2]
+                # Prepare the request URL
+                url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}/chat/completions"
+                request = Request()
+                # Prepare headers
+                headers = {
+                    "Authorization": f"Bearer {get_access_token()}",
+                    "Content-Type": "application/json"
+                }
                 number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
-                max_tokens = 1024
+                system_prompt=f"respond with {number_of_responses} responses to post in facebook, the response should courage people to repost it. response should be in hebrew. put serial number on the beggining of each response. dont use emoji within the responses. the original post is"
+                content = f"{user_input} :  {system_prompt}"
+                # Prepare the JSON payload
+                data = {
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": user_input,
+                            "additional_info": "we are in favour of the user"
+                        }
+                    ],
+                    "parameters": {
+                        "max_output_tokens": 1024,
+                        "temperature": 0.5,
+                        "top_p": 0.9,
+                        "max_tokens" : 1024,
+                    }
+                }
+
+                # Send the HTTP POST request
+                response = requests.post(url, headers=headers, json=data) 
+                print(response.json())
+                result = response.json()["choices"][0]["message"]["content"]    
+            output = result
+            st.session_state[f"user_input"].append(user_input)
+            st.session_state[f"generated"].append(output)       
+"""
+                max_tokens = 100000
                 temperature = st.session_state["TEMPERATURE"]
-                top_p = 0.9
-                llm_chain="תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, הפוסט הוא: "
-#                llm_chain= "הצע "
-                prompt = f"{llm_chain} {user_input} : "
+                top_p = 10
+                top_k = 10
+                number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
+                system_prompt="give {number_of_responses} responses to post in facebook, the response should courage opther people to repost it. response should be in hebrew. put serial number on the beggining of each response. dont use emoji within the responses. the original post is"
+                prompt = f"{user_input} :  {system_prompt}"
                 # Structure your instances for a chat request
                 instances = [
                     {
                         "messages": [
-                            {"role": "user", "content": prompt.strip()},
+                            {"role": "user", "content": prompt},
                         ],
                         "parameters": {
-                            "max_new_tokens": max_tokens,
-                            "max_tokens": max_tokens,
+#                            "max_new_tokens": max_tokens,
                             "temperature": temperature,
-                            "top_p": top_p,
+#                            "top_p": top_p,
 #                            "top_k": top_k,
                         },
                     },
@@ -107,10 +146,10 @@ def chat_input():
 
                 # Make the prediction call to the chat model
                 response = llm.predict(instances)
+                print(response)
                 result=response.predictions[0]
-            output = result
-            st.session_state[f"user_input"].append(user_input)
-            st.session_state[f"generated"].append(output)
+"""
+
 
 
 def display_chat():
