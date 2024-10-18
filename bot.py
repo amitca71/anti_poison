@@ -7,10 +7,7 @@ from dotenv import load_dotenv
 from common_functions import ChainClass
 
 from chains import (
-    load_embedding_model,
-    load_llm,
     configure_llm_only_chain,
-    configure_qa_rag_chain,
     generate_ticket,
 )
 
@@ -40,6 +37,9 @@ class StreamHandler(BaseCallbackHandler):
 llm=ChainClass().get_llm_model()
 
 llm_chain = configure_llm_only_chain(llm)
+output_function=None
+if type(llm_chain)!=str:
+    output_function = llm_chain
 
 
 # Streamlit UI
@@ -77,13 +77,38 @@ def chat_input():
             st.write(user_input)
         with st.chat_message("assistant"):
             stream_handler = StreamHandler(st.empty())
-            result = output_function(
-                {"question": user_input, "chat_history": []}, callbacks=[stream_handler]
-            )["answer"]
+            if (output_function):
+                result = output_function(
+                    {"question": user_input, "chat_history": []}, callbacks=[stream_handler]
+                )["answer"]
+            else:
+                max_tokens = 10000
+                temperature = st.session_state["TEMPERATURE"]
+                top_p = 0.9
+                top_k = 1
+                llm_chain="תן 10 תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, הפוסט הוא: "
+                prompt = f"{llm_chain} {user_input} : "
+                # Structure your instances for a chat request
+                instances = [
+                    {
+                        "messages": [
+                            {"role": "user", "content": prompt},
+                        ],
+                        "parameters": {
+                            "max_new_tokens": max_tokens,
+                            "temperature": temperature,
+#                            "top_p": top_p,
+#                            "top_k": top_k,
+                        },
+                    },
+                ]
+
+                # Make the prediction call to the chat model
+                response = llm.predict(instances)
+                result=response.predictions[0]
             output = result
             st.session_state[f"user_input"].append(user_input)
             st.session_state[f"generated"].append(output)
-            st.session_state[f"rag_mode"].append(name)
 
 
 def display_chat():
@@ -105,7 +130,6 @@ def display_chat():
                 st.write(st.session_state[f"user_input"][i])
 
             with st.chat_message("assistant"):
-                st.caption(f"RAG: {st.session_state[f'rag_mode'][i]}")
                 st.write(st.session_state[f"generated"][i])
 
         with st.expander("Not finding what you're looking for?"):
@@ -127,12 +151,8 @@ def mode_select() -> str:
     return st.radio("Select RAG mode", options, horizontal=True)
 
 
-#name = mode_select()
-name ="Disabled"
-if name == "LLM only" or name == "Disabled":
-    output_function = llm_chain
-elif name == "Vector + Graph" or name == "Enabled":
-    output_function = rag_chain
+
+
 
 
 def open_sidebar():

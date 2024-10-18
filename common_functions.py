@@ -4,6 +4,8 @@ import streamlit.components.v1 as components
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from google.cloud import aiplatform
+import os
 
 def ChangeButtonColour(wgt_txt, wch_hex_colour = '12px'):
     htmlstr = """<script>var elements = window.parent.document.querySelectorAll('*'), i;
@@ -42,9 +44,29 @@ class ChainClass:
         self.api_base=None if "GOOGLE" in st.session_state["MODEL_API_KEY_TYPE"] else st.secrets[st.session_state["MODEL_API_KEY_TYPE"].replace("KEY", "BASE")]
         self.model_name=st.session_state['GPT_MODEL_NAME']
         self.temprature=st.session_state["TEMPERATURE"]
-        if "gemini" in self.model_name:
-            self.llm = ChatGoogleGenerativeAI(model=self.model_name, google_api_key=self.api_key,temperature=self.temprature, verbose=True,top_k=200)
+        if "free" in self.model_name:
+            vertex_lst=st.secrets["VERTEX_API_BASE"].split(",")
+            project_id=vertex_lst[0]
+            location=vertex_lst[1]
+            endpoint_id=vertex_lst[2]
+            service_account_info = st.secrets["VERTEX_API_KEY"]
+            print(service_account_info)
+            credentials_dict = json.loads(service_account_info)
+
+            # Set the environment variable for Google Cloud authentication
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/credentials.json"
+
+            # Write the credentials to a temporary file
+            with open(os.environ["GOOGLE_APPLICATION_CREDENTIALS"], "w") as f:
+                json.dump(credentials_dict, f)            
+
+            # Initialize the AI Platform
+            endpoint = aiplatform.Endpoint(endpoint_id, project=project_id, location=location)
+            self.llm =endpoint
+
         else:
-            self.llm = ChatOpenAI(model=self.model_name, openai_api_key=self.api_key,openai_api_base=self.api_base,temperature=self.temprature)
+            self.llm = ChatGoogleGenerativeAI(model=self.model_name, google_api_key=self.api_key,temperature=self.temprature, verbose=True,top_k=200)
+#            self.llm = ChatOpenAI(model=self.model_name, openai_api_key=self.api_key,openai_api_base=self.api_base,temperature=self.temprature)
+
     def get_llm_model(self):
         return self.llm

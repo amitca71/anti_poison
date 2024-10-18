@@ -3,11 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 from promote_post_sidebar import promote_post_sidebar
-#from technical_objects_sidebar import technical_objects_sidebar
 
-
-# Streamlit app layout
-#st.title("Building Information Modeling")
 
 # Get all secrets
 models_dct = {v: k.split("_")[3] + "_API_KEY" for  k,v in st.secrets.items() if "GPT_MODEL_NAME" in k }
@@ -45,12 +41,7 @@ def common_sidebar():
             print("repost positive")
             st.session_state["USER_SELECTION"]="REPOST_POSITIVE"
             promote_post_sidebar()
-#        elif page == "Technical documentation":
-#            st.session_state["USER_SELECTION"]="DOCUMENTATION"
-#            technical_doc_sidebar()
-#        elif page == "Bim Objects":
-#            st.session_state["USER_SELECTION"]="BIM_OBJECTS"
-#            technical_objects_sidebar()
+
 
 
  
