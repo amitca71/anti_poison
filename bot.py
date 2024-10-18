@@ -86,7 +86,7 @@ def chat_input():
                 max_tokens = 1024
                 temperature = st.session_state["TEMPERATURE"]
                 top_p = 0.9
-                llm_chain="תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, הפוסט הוא: "
+                llm_chain="תן תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, ללא אימוג׳י, הפוסט הוא: "
 #                llm_chain= "הצע "
                 prompt = f"{llm_chain} {user_input} : "
                 # Structure your instances for a chat request
