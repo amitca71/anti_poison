@@ -4,7 +4,7 @@ import streamlit as st
 from streamlit.logger import get_logger
 from langchain.callbacks.base import BaseCallbackHandler
 from dotenv import load_dotenv
-from common_functions import ChainClass, get_access_token
+from common_functions import ChainClass, get_access_token, get_model_endpoint
 from google.auth.transport.requests import Request
 from chains import (
     configure_llm_only_chain,
@@ -82,14 +82,19 @@ def chat_input():
                     {"question": user_input, "chat_history": []}, callbacks=[stream_handler]
                 )["answer"]
             else:
-                vertex_lst=st.secrets["VERTEX_API_BASE"].split(",")
-                PROJECT_ID=vertex_lst[0]
-                LOCATION=vertex_lst[1]
-                ENDPOINT_ID=vertex_lst[2]
+#                vertex_lst=st.secrets["VERTEX_API_BASE"].split(",")
+                PROJECT_ID=st.secrets["PROJECT_ID"]
+                LOCATION=st.secrets["LOCATION"]
+#                ENDPOINT_ID=vertex_lst[2]
                 # Prepare the request URL
 #                url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}/chat/completions"
-                request = Request()
-                url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}'
+#                request = Request()
+#                url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}'
+ 
+                models_deployed, url=get_model_endpoint(project_id=PROJECT_ID, location=LOCATION)
+                if (not models_deployed):
+                    print("not deployed yet")
+
                 oai_client = openai.OpenAI(
                     base_url = url,
                     api_key = get_access_token())
@@ -117,17 +122,6 @@ def chat_input():
                 print (gen)
                 result=gen.choices[0].message.content
 
-#                for completion in gen:
-#                    text = completion.choices[0].delta.content
-#                    if text:
-#                        full_response += text.replace('<', '&lt;').replace('>', '&gt;') or ''
-#                    yield result
-
-############################################# 
-#                number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
-#                system_prompt=f"respond with {number_of_responses} responses to post in facebook, the response should courage people to repost it. response should be in hebrew. put serial number on the beggining of each response. dont use emoji within the responses. the original post is"
-#                content = f"{user_input} :  {system_prompt}"
- 
             output = result
             st.session_state[f"user_input"].append(user_input)
             st.session_state[f"generated"].append(output)       

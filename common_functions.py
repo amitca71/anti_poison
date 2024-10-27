@@ -92,3 +92,41 @@ class ChainClass:
 
     def get_llm_model(self):
         return self.llm
+import threading
+
+def get_or_create_endpoint(project_id, location, endpoint_name="sara"):
+    aiplatform.init(project=project_id, location=location)
+    endpoint_list=aiplatform.Endpoint.list()
+    endpoint=None
+    newly_created=False
+    if len(endpoint_list)>0:
+        endpoint=endpoint_list[0]
+        print("endpoint already up")
+    else:
+        print("creating endpoint")
+        endpoint = aiplatform.Endpoint.create(
+        display_name=endpoint_name,
+        project=project_id,
+        location=location)
+        newly_created=True
+    return(newly_created, endpoint)
+
+def get_model_endpoint(project_id, location, endpoint_name="sara", model_id='dictalm2_0-instruct-1729340370740'):
+    newly_created, endpoint=get_or_create_endpoint(project_id, location, endpoint_name=endpoint_name)
+    url = f'https://{location}-aiplatform.googleapis.com/v1beta1/{endpoint.resource_name}'
+    models=endpoint.list_models()
+    models_deployed=False if (len(models)==0) else True
+    if len(models)==0 and newly_created:
+        print("deploying model")
+        model = aiplatform.Model(model_name=model_id)
+        def deploy_model():
+            model.deploy(
+                endpoint=endpoint,
+                deployed_model_display_name=endpoint_name,
+                traffic_split={'0': 100}
+            )
+
+        # Start the deployment in a new thread
+        threading.Thread(target=deploy_model).start()
+    return (models_deployed, url)
+    
