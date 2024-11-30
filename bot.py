@@ -7,14 +7,12 @@ from dotenv import load_dotenv
 from common_functions import ChainClass, get_access_token, get_model_endpoint
 from google.auth.transport.requests import Request
 from chains import (
-    configure_llm_only_chain,
-    generate_ticket,
+    configure_llm_only_chain
 )
 import requests
 load_dotenv(".env")
 from common_sidebar import common_sidebar
 common_sidebar()
-ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/")
 embedding_model_name = os.getenv("EMBEDDING_MODEL")
 #llm_name = os.getenv("LLM", "wizard-vicuna-uncensored")
 llm_name = os.getenv("LLM", "mistral")
@@ -33,13 +31,13 @@ class StreamHandler(BaseCallbackHandler):
         self.container.markdown(self.text)
 
 
-#llm = load_llm(llm_name, logger=logger, config={"ollama_base_url": ollama_base_url})
 llm=ChainClass().get_llm_model()
 
 llm_chain = configure_llm_only_chain(llm)
 output_function=None
-if type(llm_chain)!=str:
-    output_function = llm_chain
+#if type(llm_chain)!=str:
+#    output_function = llm_chain
+
 
 
 # Streamlit UI
@@ -70,7 +68,7 @@ def chat_input():
     if "sample" in st.session_state and st.session_state["sample"] is not None:
         user_input = st.session_state["sample"]
     else:   
-        user_input = st.chat_input("What is the content of the original message?")
+        user_input = st.chat_input("write the content of the original message?")
 
     if user_input:
         with st.chat_message("user"):
@@ -82,14 +80,9 @@ def chat_input():
                     {"question": user_input, "chat_history": []}, callbacks=[stream_handler]
                 )["answer"]
             else:
-#                vertex_lst=st.secrets["VERTEX_API_BASE"].split(",")
+                print("No output function")
                 PROJECT_ID=st.secrets["PROJECT_ID"]
                 LOCATION=st.secrets["LOCATION"]
-#                ENDPOINT_ID=vertex_lst[2]
-                # Prepare the request URL
-#                url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}/chat/completions"
-#                request = Request()
-#                url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}'
  
                 models_deployed, url=get_model_endpoint(project_id=PROJECT_ID, location=LOCATION)
                 if (not models_deployed):
@@ -100,21 +93,23 @@ def chat_input():
                     api_key = get_access_token())
 ####################################################
                 number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
-                system_prompt=f"תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, ללא אימוג׳י. מספר את התגובות, הפוסט הוא: "
+                trending_words=st.session_state["TRENDING_WORDS"]
+                system_prompt=f"תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, ללא אימוג׳י. המשתמש יכול לתת לך הכוונה במה להתמקד בתשובה, בסוף הטקסט, אחרי המילים: ״הוראות מיוחדות״. אם הוא עושה זאת, כל התגובות חייבות להיות ברוח זו !!!!!!!!. התגובות ללא האשטאגים. מספר את התגובות, הפוסט הוא: "
+                user_input = user_input + f""" .\nֿ\n ֿֿֿהוראות מיוחדות עבור כל התגובות המוצעות: {trending_words} !!!.\n\n\n """
                 user_input=user_input.strip()
                 content = f"{user_input} :  {system_prompt}" 
                 messages =  [
                     {
                         "role": "user",
                         "content": content.strip(),
-#                           "additional_info": "we are in favour of the user"
+                        "additional_info":  f"{trending_words}"
                     }
                 ]
                 gen = oai_client.chat.completions.create(
                     model='dicta-il/dictalm2.0-instruct',
                     messages=messages,
-                    temperature=0.7,
-                    max_tokens=1024,
+                    temperature=0,
+                    max_tokens=4000,
                     top_p=0.9,
                     stream=False
                 )
@@ -149,16 +144,6 @@ def display_chat():
             with st.chat_message("assistant"):
                 st.write(st.session_state[f"generated"][i])
 
-        with st.expander("Not finding what you're looking for?"):
-            st.write(
-                "Automatically generate a draft for an internal ticket to our support team."
-            )
-            st.button(
-                "Generate ticket",
-                type="primary",
-                key="show_ticket",
-                on_click=open_sidebar,
-            )
         with st.container():
             st.write("&nbsp;")
 
