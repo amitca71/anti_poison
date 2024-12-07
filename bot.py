@@ -95,7 +95,8 @@ def chat_input():
 ####################################################
                 number_of_responses=st.session_state['NUMBER_OF_SUGGESTIONS']
                 trending_words=st.session_state["TRENDING_WORDS"]
-                system_prompt=f"תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, ללא אימוג׳י. המשתמש יכול לתת לך הכוונה במה להתמקד בתשובה, בסוף הטקסט, אחרי המילים: ״הוראות מיוחדות״. אם הוא עושה זאת, כל התגובות חייבות להיות ברוח זו !!!!!!!!. התגובות ללא האשטאגים. מספר את התגובות, הפוסט הוא: "
+#                system_prompt=f"תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות, ללא אימוג׳י. המשתמש יכול לתת לך הכוונה במה להתמקד בתשובה, בסוף הטקסט, אחרי המילים: ״הוראות מיוחדות״. אם הוא עושה זאת, כל התגובות חייבות להיות ברוח זו !!!!!!!!. התגובות ללא האשטאגים. מספר את התגובות, הפוסט הוא: "
+                system_prompt=st.session_state["SYSTEM_PROMPT"]
                 user_input = user_input + f""".\nֿ\n ֿֿֿהוראות מיוחדות עבור כל התגובות המוצעות: {trending_words} !!!.\n\n"""
                 user_input=user_input.strip()
                 content = f"{user_input} :  {system_prompt}" 
