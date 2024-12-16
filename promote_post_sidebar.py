@@ -15,11 +15,15 @@ def promote_post_sidebar():
             number_of_responses=st.session_state["NUMBER_OF_SUGGESTIONS"]
 #           st.session_state["SYSTEM_PROMPT"] = st.text_area("system prompt", f"""תן {number_of_responses} תגובות אפשריות שונות להדהוד הפוסט ברשתות חברתיות 
 #            , ללא אימוג׳י. המשתמש יכול לתת לך הכוונה במה להתמקד בתשובה, בסוף הטקסט, אחרי המילים: ״הוראות מיוחדות״. אם הוא עושה זאת, כל התגובות חייבות להיות ברוח זו !!!!!!!!. התגובות ללא האשטאגים. מספר את התגובות, הפוסט הוא: """)
-            st.session_state["SYSTEM_PROMPT"] = st.text_area("system prompt", f"""תן {number_of_responses} תגובות אפשריות לתמיכה בסרטון ברשתות חברתיות. 
+            st.session_state["SYSTEM_PROMPT"] = st.text_area("system prompt", f"""אתה משפיען רשת המתנגד לממשלת נתניהו.
+החזון שלך הוא ישראל דמוקרטית ומשגשגת.
+מטרתך לשכנע קוראים שנתניהו וממשלתו מזיקים למדינה ופועלים מתוך אינטרסים שאינם טובת המדינה.
+תן {number_of_responses} תגובות אפשריות לתמיכה בסרטון ברשתות חברתיות. 
 כל תגובה תהיה משפט או שני משפטים, החוזרים על נקודת מפתח בסרטון ויוצאים נגד הנושאים שנגדם יוצא הסרטון.
 המשפטים צריכים לבטא כעס. במידת האפשר השתמש באירוניה או בציניות.
+זכור לבדוק שהתגובות מתאימות למטרתך ולחזון שלך.
 אל תשתמש בהאשטגים. לפני כל תגובה סמן #.
-הפוסט הוא:  """)
+תוכן הסרטון הוא: """)
             st.session_state["TRENDING_WORDS"] = st.text_input("special instructions", "")
         # Optionally visualize graph data using third-party libraries
 
