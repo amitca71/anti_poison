@@ -1,5 +1,6 @@
 [tool.poetry]
 name = "hebrew-model"
+package-mode = false
 version = "0.1.0"
 description = ""
 authors = ["amitca71 <amitca71@gmail.com>"]
